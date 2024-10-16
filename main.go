@@ -1,8 +1,21 @@
+// package main
+
+// import (
+// 	"github.com/gin-gonic/gin"
+// 	"github.com/maiga28/guides_gorm/controllers"
+// 	"github.com/maiga28/guides_gorm/initializers"
+// 	"log"
+// )
+
+// // init loads environment variables and initializes the database
+// func init() {
+// 	initializers.LocalEnvVariables()
+// 	initializers.Database()
+// }
+
 package main
 
 import (
-	// "log"
-	// "github.com/gin-gonic/gin"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -10,7 +23,6 @@ import (
 	"github.com/maiga28/guides_gorm/initializers"
 )
 
-// init loads environment variables and initializes the database
 func init() {
 	initializers.LocalEnvVariables()
 	initializers.Database()
@@ -18,26 +30,40 @@ func init() {
 
 func main() {
 	r := gin.Default()
-	// Middleware pour afficher les routes
+
+	// Middleware pour ignorer favicon.ico
 	r.Use(func(c *gin.Context) {
-		c.Next() // Continue avec le traitement de la requête
-		// Affiche toutes les routes à chaque requête
-		for _, route := range r.Routes() {
-			log.Printf("%s %s\n", route.Method, route.Path)
+		if c.Request.RequestURI == "/favicon.ico" {
+			c.AbortWithStatus(204)
+			return
 		}
+		c.Next()
 	})
 
-	r.GET("/liste/users", controllers.Listusers)
-	r.GET("/users/:id", controllers.Showusers)
-	r.POST("/create/users", controllers.Createusers)
-	r.PUT("/update/users/:id", controllers.Updateusers)
-	r.DELETE("/delete/users/:id", controllers.Deleteusers)
+	// Afficher toutes les routes au démarrage
+	for _, route := range r.Routes() {
+		log.Printf("Route enregistrée : %s %s\n", route.Method, route.Path)
+	}
 
-	r.GET("/liste/products", controllers.ProductsIndex)
-	r.GET("/products/:id", controllers.Show)
-	r.POST("/create/products", controllers.Create)
-	r.PUT("/update/products/:id", controllers.Update)
-	r.DELETE("/delete/products/:id", controllers.Delete)
+	// Groupes de routes pour les utilisateurs
+	users := r.Group("/users")
+	{
+		users.GET("", controllers.Listusers)          // /users
+		users.GET("/:id", controllers.Showusers)      // /users/:id
+		users.POST("", controllers.Createusers)       // /users
+		users.PUT("/:id", controllers.Updateusers)    // /users/:id
+		users.DELETE("/:id", controllers.Deleteusers) // /users/:id
+	}
+
+	// Groupes de routes pour les produits
+	products := r.Group("/products")
+	{
+		products.GET("", controllers.ProductsIndex)        // /products
+		products.GET("/:id", controllers.ShowProduct)      // /products/:id
+		products.POST("", controllers.CreateProduct)       // /products
+		products.PUT("/:id", controllers.UpdateProduct)    // /products/:id
+		products.DELETE("/:id", controllers.DeleteProduct) // /products/:id
+	}
 
 	// Lancer le serveur
 	r.Run()

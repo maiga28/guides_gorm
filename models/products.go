@@ -2,7 +2,6 @@ package models
 
 import (
 	"github.com/maiga28/guides_gorm/initializers"
-	"gorm.io/gorm"
 )
 
 // init loads environment variables and initializes the database
@@ -12,7 +11,7 @@ func init() {
 }
 
 type Product struct {
-	gorm.Model
+	ID    uint `gorm:"primaryKey"` // GORM manages primary keys automatically
 	Code  string
 	Price uint
 }

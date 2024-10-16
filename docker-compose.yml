@@ -10,8 +10,11 @@ services:
       POSTGRES_DB: postgres
     ports:
       -  '5432:5432'
-    volumes:
-      - db:/var/lib/postgresql/data 
-
-volumes:
-  db:
+    app:
+      build: .
+      ports:
+        - "3000:3000"
+      environment:
+        DB_URLS: postgres://postgres:admin@db:5432/postgres?sslmode=disable
+      depends_on:
+        - db
